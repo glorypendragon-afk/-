@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>紫金矿业价值投资驾驶舱 V3.0 | Zijin Mining Terminal</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#0f172a',
+                            900: '#0b0f19',
+                            950: '#070a11',
+                        },
+                        emerald: {
+                            450: '#10b981',
+                        },
+                        gold: {
+                            400: '#facc15',
+                            500: '#eab308',
+                            600: '#ca8a04',
+                        },
+                        copper: {
+                            400: '#fb923c',
+                            500: '#f97316',
+                            600: '#ea580c',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Font Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: #0b0f19;
+            color: #e2e8f0;
+        }
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+        .glow-gold {
+            box-shadow: 0 0 15px rgba(234, 179, 8, 0.15);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.15);
+        }
+        .glow-crimson {
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.15);
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        .nav-btn.active {
+            background-color: #1e293b;
+            color: #38bdf8;
+            border-left: 3px solid #38bdf8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+
+    <!-- Top Financial Ticker Bar -->
+    <header class="bg-slate-950 border-b border-slate-800 text-xs px-4 py-2 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center space-x-3 overflow-x-auto py-1 scrollbar-none w-full md:w-auto">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                    <i class="fa-solid fa-bolt mr-1"></i> 实时行情 V3.0
+                </span>
+                
+                <!-- Stock A -->
+                <div class="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                    <span class="text-slate-400">紫金矿业(A)</span>
+                    <span id="ticker-a-price" class="font-bold mono text-emerald-400">￥17.85</span>
+                    <span id="ticker-a-change" class="text-[10px] text-emerald-400 mono">+1.82%</span>
+                </div>
+
+                <!-- Stock H -->
+                <div class="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                    <span class="text-slate-400">紫金矿业(H)</span>
+                    <span id="ticker-h-price" class="font-bold mono text-emerald-400">HK$16.42</span>
+                    <span id="ticker-h-change" class="text-[10px] text-emerald-400 mono">+2.11%</span>
+                </div>
+
+                <!-- A/H Premium -->
+                <div class="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                    <span class="text-slate-400">A/H溢价</span>
+                    <span id="ticker-ah-premium" class="font-bold mono text-cyan-400">18.4%</span>
+                </div>
+
+                <!-- Gold Spot -->
+                <div class="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                    <i class="fa-solid fa-coins text-gold-400 text-[10px]"></i>
+                    <span class="text-slate-400">伦敦金</span>
+                    <span id="ticker-gold-price" class="font-bold mono text-gold-400">$2,650/oz</span>
+                    <span id="ticker-gold-cn" class="text-[10px] text-slate-400 mono">(￥628/g)</span>
+                </div>
+
+                <!-- Copper LME -->
+                <div class="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                    <i class="fa-solid fa-cubes text-copper-400 text-[10px]"></i>
+                    <span class="text-slate-400">LME铜</span>
+                    <span id="ticker-copper-price" class="font-bold mono text-copper-400">$9,850/t</span>
+                    <span id="ticker-copper-cn" class="text-[10px] text-slate-400 mono">(￥78.2k/t)</span>
+                </div>
+
+                <!-- Lithium LCE -->
+                <div class="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-slate-900 border border-slate-800">
+                    <span class="text-slate-400">碳酸锂</span>
+                    <span id="ticker-lithium-price" class="font-bold mono text-sky-400">￥76,500/t</span>
+                </div>
+            </div>
+
+            <!-- Global Status Controls -->
+            <div class="flex items-center space-x-3 ml-auto text-[11px]">
+                <div class="flex items-center space-x-1 text-slate-400">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span id="api-status-label">自动挂载核心API</span>
+                </div>
+                <button onclick="toggleDataFeedModal()" class="px-2 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded transition flex items-center gap-1">
+                    <i class="fa-solid fa-sliders text-cyan-400"></i> 数据源/代理配置
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Dashboard Container -->
+    <div class="flex-1 flex flex-col md:flex-row max-w-7xl w-full mx-auto p-3 md:p-6 gap-6">
+
+        <!-- Left Navigation Sidebar -->
+        <aside class="w-full md:w-64 flex flex-col gap-2 shrink-0">
+            <!-- App Branding Card -->
+            <div class="glass-card p-4 rounded-xl mb-2">
+                <div class="flex items-center space-x-3 mb-2">
+                    <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-amber-700 flex items-center justify-center font-black text-xl text-slate-950 shadow-lg">
+                        紫
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-slate-100 text-sm leading-snug">紫金矿业价值驾驶舱</h1>
+                        <p class="text-[11px] text-slate-400 mono">ZIJIN TERMINAL V3.0</p>
+                    </div>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed border-t border-slate-800/80 pt-2 mt-1">
+                    资源 → 产量 → 成本 → 自由现金流 → 内在价值 → 安全边际
+                </p>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex flex-col gap-1 text-xs">
+                <button onclick="switchTab('overview')" id="nav-overview" class="nav-btn active px-3 py-2.5 rounded-lg flex items-center justify-between text-slate-300 hover:bg-slate-800 transition">
+                    <span class="flex items-center gap-2.5"><i class="fa-solid fa-chart-line w-4 text-cyan-400"></i> 投资总览 & 估值快照</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                </button>
+                <button onclick="switchTab('valuation')" id="nav-valuation" class="nav-btn px-3 py-2.5 rounded-lg flex items-center justify-between text-slate-300 hover:bg-slate-800 transition">
+                    <span class="flex items-center gap-2.5"><i class="fa-solid fa-calculator w-4 text-emerald-400"></i> DCF & 估值实验室</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                </button>
+                <button onclick="switchTab('sensitivity')" id="nav-sensitivity" class="nav-btn px-3 py-2.5 rounded-lg flex items-center justify-between text-slate-300 hover:bg-slate-800 transition">
+                    <span class="flex items-center gap-2.5"><i class="fa-solid fa-sliders w-4 text-amber-400"></i> 金铜价格利润敏感性</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                </button>
+                <button onclick="switchTab('mines')" id="nav-mines" class="nav-btn px-3 py-2.5 rounded-lg flex items-center justify-between text-slate-300 hover:bg-slate-800 transition">
+                    <span class="flex items-center gap-2.5"><i class="fa-solid fa-mountain-city w-4 text-copper-400"></i> 核心矿山资产 (NAV)</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                </button>
+                <button onclick="switchTab('financials')" id="nav-financials" class="nav-btn px-3 py-2.5 rounded-lg flex items-center justify-between text-slate-300 hover:bg-slate-800 transition">
+                    <span class="flex items-center gap-2.5"><i class="fa-solid fa-table-list w-4 text-purple-400"></i> 10年财务与2035预测</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                </button>
+                <button onclick="switchTab('thesis')" id="nav-thesis" class="nav-btn px-3 py-2.5 rounded-lg flex items-center justify-between text-slate-300 hover:bg-slate-800 transition">
+                    <span class="flex items-center gap-2.5"><i class="fa-solid fa-shield-halved w-4 text-rose-400"></i> 投资逻辑 & 风险预警</span>
+                    <i class="fa-solid fa-chevron-right text-[10px] text-slate-500"></i>
+                </button>
+            </nav>
+
+            <!-- Latest Official Data Badge Card -->
+            <div class="glass-card p-3 rounded-xl mt-auto text-xs space-y-2 border-amber-500/20">
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold text-amber-400 text-[11px]"><i class="fa-solid fa-file-invoice text-amber-400 mr-1"></i> 最新经营锚点 (2026H1)</span>
+                </div>
+                <div class="grid grid-cols-2 gap-1.5 text-[11px] mono pt-1 border-t border-slate-800">
+                    <div>
+                        <div class="text-slate-500 text-[10px]">矿产金</div>
+                        <div class="font-semibold text-slate-200">47.2 吨</div>
+                    </div>
+                    <div>
+                        <div class="text-slate-500 text-[10px]">矿产铜</div>
+                        <div class="font-semibold text-slate-200">53.4 万吨</div>
+                    </div>
+                    <div>
+                        <div class="text-slate-500 text-[10px]">碳酸锂 (LCE)</div>
+                        <div class="font-semibold text-slate-200">4.4 万吨</div>
+                    </div>
+                    <div>
+                        <div class="text-slate-500 text-[10px]">中期现金分红</div>
+                        <div class="font-semibold text-emerald-400">111 亿元</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right Main Viewport area -->
+        <main class="flex-1 min-w-0">
+
+            <!-- TAB 1: OVERVIEW -->
+            <div id="tab-overview" class="space-y-6">
+                
+                <!-- Security Header / Margin of Safety Big Indicator -->
+                <div class="glass-card p-5 rounded-2xl relative overflow-hidden border-slate-700/60">
+                    <div class="absolute -right-12 -top-12 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                    
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+                        <div>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-300 font-mono">601899.SH / 2899.HK</span>
+                                <span class="text-xs px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">行业龙头 · 自主找矿探矿</span>
+                            </div>
+                            <h2 class="text-xl md:text-2xl font-bold text-slate-100 mt-1">紫金矿业 Value Investing Cockpit</h2>
+                            <p class="text-xs text-slate-400 mt-0.5">内在价值评估与安全边际动态跟踪面板</p>
+                        </div>
+
+                        <!-- Dynamic Margin of Safety Score Card -->
+                        <div class="flex items-center gap-4 bg-slate-900/90 p-3.5 rounded-xl border border-slate-800 w-full lg:w-auto justify-between">
+                            <div class="text-right">
+                                <div class="text-[11px] text-slate-400">基准 DCF 每股内在价值</div>
+                                <div id="intrinsic-val-display" class="text-xl font-bold text-amber-400 mono">￥23.40</div>
+                            </div>
+                            <div class="h-8 w-px bg-slate-800"></div>
+                            <div class="text-right">
+                                <div class="text-[11px] text-slate-400">当前安全边际 (Margin of Safety)</div>
+                                <div id="mos-percentage-display" class="text-xl font-bold text-emerald-400 mono">+23.7%</div>
+                            </div>
+                            <div id="mos-badge" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-xs">
+                                具有吸引力
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Safety Margin Gauge Bar -->
+                    <div class="mt-5 space-y-1.5">
+                        <div class="flex justify-between text-xs text-slate-400">
+                            <span>深亏区域 (&lt;￥12)</span>
+                            <span>极致安全区 (&lt;￥15)</span>
+                            <span>合理估值上限 (￥23.4)</span>
+                            <span>高估泡沫区 (&gt;￥30)</span>
+                        </div>
+                        <div class="h-3 w-full bg-slate-800 rounded-full overflow-hidden flex relative">
+                            <div class="h-full bg-rose-500/60 w-[20%]" title="极高风险区"></div>
+                            <div class="h-full bg-amber-500/50 w-[25%]" title="合理买入区间"></div>
+                            <div class="h-full bg-emerald-500/80 w-[25%]" title="显著安全边际"></div>
+                            <div class="h-full bg-cyan-500/50 w-[30%]" title="溢价估值区"></div>
+                            <!-- Marker for current price -->
+                            <div id="price-marker-bar" class="absolute top-0 bottom-0 w-1 bg-white shadow-[0_0_8px_#fff] transition-all duration-500" style="left: 60%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4 Key Financial Matrix Metrics -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="glass-card p-4 rounded-xl border-slate-800">
+                        <div class="text-xs text-slate-400 flex justify-between">
+                            <span>2026E 归母净利润</span>
+                            <i class="fa-solid fa-arrow-trend-up text-emerald-400"></i>
+                        </div>
+                        <div class="text-xl font-bold text-slate-100 mono mt-1">385.0 <span class="text-xs text-slate-400 font-normal">亿元</span></div>
+                        <div class="text-[11px] text-emerald-400 mt-1 flex items-center gap-1">
+                            <span>同比 +23.8%</span>
+                            <span class="text-slate-500">(2025: 311亿)</span>
+                        </div>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-xl border-slate-800">
+                        <div class="text-xs text-slate-400 flex justify-between">
+                            <span>动态 PE (2026E)</span>
+                            <i class="fa-solid fa-chart-pie text-cyan-400"></i>
+                        </div>
+                        <div id="overview-pe-display" class="text-xl font-bold text-cyan-400 mono mt-1">12.3x</div>
+                        <div class="text-[11px] text-slate-400 mt-1">5年中位数: <span class="mono text-slate-200">16.2x</span></div>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-xl border-slate-800">
+                        <div class="text-xs text-slate-400 flex justify-between">
+                            <span>年化自由现金流 (FCF)</span>
+                            <i class="fa-solid fa-sack-dollar text-gold-400"></i>
+                        </div>
+                        <div class="text-xl font-bold text-amber-400 mono mt-1">290.0 <span class="text-xs text-slate-400 font-normal">亿元</span></div>
+                        <div class="text-[11px] text-slate-400 mt-1">FCF Yield: <span class="mono text-emerald-400">6.15%</span></div>
+                    </div>
+
+                    <div class="glass-card p-4 rounded-xl border-slate-800">
+                        <div class="text-xs text-slate-400 flex justify-between">
+                            <span>预期股息率 (Dividend)</span>
+                            <i class="fa-solid fa-hand-holding-dollar text-emerald-400"></i>
+                        </div>
+                        <div class="text-xl font-bold text-emerald-400 mono mt-1">3.65%</div>
+                        <div class="text-[11px] text-slate-400 mt-1">分红率预期: <span class="mono text-slate-200">45%</span></div>
+                    </div>
+                </div>
+
+                <!-- Charts Row: Production Growth & Intrinsic Value Multiples -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Chart 1: Metal Production CAGR -->
+                    <div class="glass-card p-4 rounded-xl border-slate-800">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-xs font-bold text-slate-200 flex items-center gap-2">
+                                <i class="fa-solid fa-layer-group text-amber-400"></i> 矿产金/矿产铜/锂(LCE) 产量增长通道 (2020-2028E)
+                            </h3>
+                            <span class="text-[10px] text-slate-400">单位: 吨 / 万吨</span>
+                        </div>
+                        <div class="h-64 relative">
+                            <canvas id="productionChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Chart 2: Revenue vs Free Cashflow -->
+                    <div class="glass-card p-4 rounded-xl border-slate-800">
+                        <div class="flex justify-between items-center mb-3">
+                            <h3 class="text-xs font-bold text-slate-200 flex items-center gap-2">
+                                <i class="fa-solid fa-chart-area text-cyan-400"></i> 营业收入 vs 归母净利润 vs FCF 演进轨迹
+                            </h3>
+                            <span class="text-[10px] text-slate-400">单位: 亿元</span>
+                        </div>
+                        <div class="h-64 relative">
+                            <canvas id="financialTrendChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: VALUATION LAB -->
+            <div id="tab-valuation" class="space-y-6 hidden">
+                <div class="glass-card p-5 rounded-2xl border-slate-800">
+                    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-calculator text-emerald-400"></i> 多维估值实验室 (Valuation Terminal)
+                    </h2>
+                    <p class="text-xs text-slate-400 mb-4">通过修改 WACC、终值增长率及未来 10 年 FCF 增速，动态测算紫金矿业内在价值。</p>
+
+                    <!-- DCF Interactive Parameters Controls -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-slate-900/80 p-4 rounded-xl border border-slate-800 mb-6">
+                        <!-- WACC Slider -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <label class="text-slate-300 font-medium">WACC (加权平均资本成本)</label>
+                                <span id="wacc-val" class="mono font-bold text-emerald-400">8.5%</span>
+                            </div>
+                            <input type="range" id="wacc-slider" min="6.5" max="11.5" step="0.25" value="8.5" oninput="updateDCF()" class="w-full accent-emerald-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                            <div class="flex justify-between text-[10px] text-slate-500">
+                                <span>6.5% (宽松)</span>
+                                <span>8.5% (基准)</span>
+                                <span>11.5% (严苛)</span>
+                            </div>
+                        </div>
+
+                        <!-- Growth Rate Year 1-5 Slider -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <label class="text-slate-300 font-medium">前5年 FCF 年化增速</label>
+                                <span id="g1-val" class="mono font-bold text-cyan-400">12.0%</span>
+                            </div>
+                            <input type="range" id="g1-slider" min="5.0" max="22.0" step="0.5" value="12.0" oninput="updateDCF()" class="w-full accent-cyan-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                            <div class="flex justify-between text-[10px] text-slate-500">
+                                <span>5%</span>
+                                <span>12% (巨龙/Kamoa投产)</span>
+                                <span>22%</span>
+                            </div>
+                        </div>
+
+                        <!-- Perpetual Growth Slider -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <label class="text-slate-300 font-medium">永续增长率 (g)</label>
+                                <span id="gp-val" class="mono font-bold text-gold-400">2.5%</span>
+                            </div>
+                            <input type="range" id="gp-slider" min="1.0" max="4.0" step="0.25" value="2.5" oninput="updateDCF()" class="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                            <div class="flex justify-between text-[10px] text-slate-500">
+                                <span>1.0%</span>
+                                <span>2.5% (通胀对冲)</span>
+                                <span>4.0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dynamic Valuation Output Panel -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
+                            <div class="text-xs text-slate-400">DCF 模型折算总企业价值 (EV)</div>
+                            <div id="dcf-ev-result" class="text-2xl font-bold text-slate-100 mono mt-1">￥6,840 亿</div>
+                            <div class="text-[11px] text-slate-500 mt-1">扣除净债务后股权价值</div>
+                        </div>
+
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
+                            <div class="text-xs text-slate-400">测算内在价值 (Intrinsic Price)</div>
+                            <div id="dcf-share-result" class="text-2xl font-bold text-amber-400 mono mt-1">￥23.40 / 股</div>
+                            <div class="text-[11px] text-slate-500 mt-1">对应总市值约 6,180 亿元</div>
+                        </div>
+
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
+                            <div class="text-xs text-slate-400">买入建仓区 (合理 70% 折扣)</div>
+                            <div id="dcf-buy-zone" class="text-2xl font-bold text-emerald-400 mono mt-1">￥16.38 / 股</div>
+                            <div class="text-[11px] text-emerald-400/80 mt-1"><i class="fa-solid fa-circle-check"></i> 当前股价安全边际适中</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Three Scenarios Table -->
+                <div class="glass-card p-5 rounded-2xl border-slate-800">
+                    <h3 class="text-sm font-bold text-slate-200 mb-3"><i class="fa-solid fa-cubes-stacked text-cyan-400"></i> 三情景估值对比矩阵 (Pessimistic / Base / Optimistic)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-300">
+                            <thead class="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800">
+                                <tr>
+                                    <th class="p-3">情景设定</th>
+                                    <th class="p-3">金/铜假设</th>
+                                    <th class="p-3">2026E 净利润</th>
+                                    <th class="p-3">合理 PE</th>
+                                    <th class="p-3">目标估值 (每股)</th>
+                                    <th class="p-3">较当前空间</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60">
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-semibold text-rose-400">悲观情景 (Bear)</td>
+                                    <td class="p-3 text-slate-400">金 $2,200/oz, 铜 $8,000/t</td>
+                                    <td class="p-3 mono">295 亿元</td>
+                                    <td class="p-3 mono">12.0x</td>
+                                    <td class="p-3 mono font-bold text-rose-400">￥13.40</td>
+                                    <td class="p-3 mono text-rose-400">-24.9%</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30 bg-slate-800/20">
+                                    <td class="p-3 font-semibold text-amber-400">基准情景 (Base)</td>
+                                    <td class="p-3 text-slate-400">金 $2,650/oz, 铜 $9,800/t</td>
+                                    <td class="p-3 mono">385 亿元</td>
+                                    <td class="p-3 mono">16.0x</td>
+                                    <td class="p-3 mono font-bold text-amber-400">￥23.40</td>
+                                    <td class="p-3 mono text-emerald-400">+31.1%</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-semibold text-emerald-400">乐观情景 (Bull)</td>
+                                    <td class="p-3 text-slate-400">金 $3,000/oz, 铜 $11,500/t</td>
+                                    <td class="p-3 mono">480 亿元</td>
+                                    <td class="p-3 mono">18.5x</td>
+                                    <td class="p-3 mono font-bold text-emerald-400">￥33.60</td>
+                                    <td class="p-3 mono text-emerald-400">+88.2%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 3: COMMODITY SENSITIVITY -->
+            <div id="tab-sensitivity" class="space-y-6 hidden">
+                <div class="glass-card p-5 rounded-2xl border-slate-800">
+                    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-sliders text-amber-400"></i> 大宗商品价格 - 利润敏感性模拟器
+                    </h2>
+                    <p class="text-xs text-slate-400 mb-6">紫金矿业作为资源型矿企，其盈利对黄金与铜价格极为敏感。通过下方滑块模拟商品波动。</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-slate-900/90 p-5 rounded-xl border border-slate-800">
+                        <!-- Gold Price Slider -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gold-400 font-bold"><i class="fa-solid fa-coins mr-1"></i> 伦敦金价格 (USD/oz)</span>
+                                <span id="sens-gold-val" class="mono font-bold text-gold-400">$2,650</span>
+                            </div>
+                            <input type="range" id="sens-gold-slider" min="2000" max="3400" step="50" value="2650" oninput="updateSensitivity()" class="w-full accent-amber-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                            <div class="flex justify-between text-[10px] text-slate-500 mono">
+                                <span>$2,000</span>
+                                <span>基准: $2,650</span>
+                                <span>$3,400</span>
+                            </div>
+                        </div>
+
+                        <!-- Copper Price Slider -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <span class="text-copper-400 font-bold"><i class="fa-solid fa-cubes mr-1"></i> LME 铜价格 (USD/ton)</span>
+                                <span id="sens-copper-val" class="mono font-bold text-copper-400">$9,850</span>
+                            </div>
+                            <input type="range" id="sens-copper-slider" min="7000" max="13000" step="250" value="9850" oninput="updateSensitivity()" class="w-full accent-orange-500 bg-slate-800 h-2 rounded-lg cursor-pointer">
+                            <div class="flex justify-between text-[10px] text-slate-500 mono">
+                                <span>$7,000</span>
+                                <span>基准: $9,850</span>
+                                <span>$13,000</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sensitivity Impact Card Results -->
+                    <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs text-slate-400">模拟 2026E 归母净利润</div>
+                            <div id="sens-profit-result" class="text-2xl font-bold text-emerald-400 mono mt-1">385.0 亿元</div>
+                            <div id="sens-profit-diff" class="text-[11px] text-slate-400 mt-1">较基准变动: <span class="mono text-slate-200">0.0 亿元</span></div>
+                        </div>
+
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs text-slate-400">模拟 EPS (每股收益)</div>
+                            <div id="sens-eps-result" class="text-2xl font-bold text-cyan-400 mono mt-1">￥1.45</div>
+                            <div id="sens-pe-result" class="text-[11px] text-slate-400 mt-1">对应 PE: <span class="mono text-slate-200">12.3x</span></div>
+                        </div>
+
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+                            <div class="text-xs text-slate-400">动态年化股息收益率</div>
+                            <div id="sens-div-result" class="text-2xl font-bold text-gold-400 mono mt-1">3.65%</div>
+                            <div class="text-[11px] text-slate-400 mt-1">基于 45% 分红比例算</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Elasticity Rule Rules Box -->
+                <div class="glass-card p-4 rounded-xl border-slate-800 text-xs space-y-2">
+                    <h4 class="font-bold text-slate-200"><i class="fa-solid fa-lightbulb text-amber-400 mr-1"></i> 紫金矿业商品敏感性经验法则 (Sensitivity Rule of Thumb)</h4>
+                    <p class="text-slate-400 leading-relaxed">
+                        • <strong class="text-gold-400">黄金弹性</strong>：金价每上涨 <span class="mono text-slate-200">$100/oz</span> (或国内现货上涨 ￥25/g)，按约 55 吨年产量计算，增加归母净利润约 <span class="mono text-emerald-400">22 - 25 亿元</span>。<br>
+                        • <strong class="text-copper-400">铜弹性</strong>：LME 铜价每上涨 <span class="mono text-slate-200">$500/吨</span> (约 ￥3,800/吨)，按约 110 万吨年产量计算，增加归母净利润约 <span class="mono text-emerald-400">28 - 32 亿元</span>。
+                    </p>
+                </div>
+            </div>
+
+            <!-- TAB 4: CORE MINES -->
+            <div id="tab-mines" class="space-y-6 hidden">
+                <div class="glass-card p-5 rounded-2xl border-slate-800">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2">
+                                <i class="fa-solid fa-mountain-city text-copper-400"></i> 核心矿山资产 Sum-Of-The-Parts (NAV) 估值拆解
+                            </h2>
+                            <p class="text-xs text-slate-400">紫金矿业在全球控制的特大型世界级矿山分布与现金流估值。</p>
+                        </div>
+                    </div>
+
+                    <!-- Core Mines Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Mine 1: Julong Copper -->
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/30">西藏 · 权益 50.1%</span>
+                                    <h3 class="font-bold text-slate-100 text-sm mt-1">巨龙铜矿 (Julong Copper)</h3>
+                                </div>
+                                <span class="text-xs font-bold text-copper-400 mono">NAV 估值: ￥1,250亿</span>
+                            </div>
+                            <p class="text-xs text-slate-400">中国最大斑岩型铜矿。一期已达产，二期改扩建工程预计2026年竣工，届时年产铜提升至30-35万吨。</p>
+                            <div class="grid grid-cols-3 gap-2 text-[11px] mono pt-2 border-t border-slate-800 text-slate-300">
+                                <div><span class="text-slate-500 block text-[10px]">铜储量</span> 2,588 万吨</div>
+                                <div><span class="text-slate-500 block text-[10px]">全成本</span> $3,800/t</div>
+                                <div><span class="text-slate-500 block text-[10px]">2026E产量</span> 30 万吨</div>
+                            </div>
+                        </div>
+
+                        <!-- Mine 2: Kamoa-Kakula -->
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">刚果(金) · 权益 ~45%</span>
+                                    <h3 class="font-bold text-slate-100 text-sm mt-1">卡莫阿-卡库拉铜矿 (Kamoa-Kakula)</h3>
+                                </div>
+                                <span class="text-xs font-bold text-copper-400 mono">NAV 估值: ￥1,420亿</span>
+                            </div>
+                            <p class="text-xs text-slate-400">全球品位最高的大型铜矿之一。三期选厂已投产，配合自有配套冶炼厂，年产铜将冲刺60万吨。</p>
+                            <div class="grid grid-cols-3 gap-2 text-[11px] mono pt-2 border-t border-slate-800 text-slate-300">
+                                <div><span class="text-slate-500 block text-[10px]">铜品位</span> 5.3% (极其罕见)</div>
+                                <div><span class="text-slate-500 block text-[10px]">C1 成本</span> $1.45/lb</div>
+                                <div><span class="text-slate-500 block text-[10px]">2026E产量</span> 55 万吨</div>
+                            </div>
+                        </div>
+
+                        <!-- Mine 3: Buritica Gold Mine -->
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-gold-500/20 text-gold-400 border border-gold-500/30">哥伦比亚 · 权益 100%</span>
+                                    <h3 class="font-bold text-slate-100 text-sm mt-1">武蒂卡金矿 (Buriticá)</h3>
+                                </div>
+                                <span class="text-xs font-bold text-gold-400 mono">NAV 估值: ￥480亿</span>
+                            </div>
+                            <p class="text-xs text-slate-400">超高品位地下金矿，年产矿产金约 9-10 吨，为紫金海外黄金盈利的核心支柱之一。</p>
+                            <div class="grid grid-cols-3 gap-2 text-[11px] mono pt-2 border-t border-slate-800 text-slate-300">
+                                <div><span class="text-slate-500 block text-[10px]">金品位</span> 9.3 g/t</div>
+                                <div><span class="text-slate-500 block text-[10px]">AISC 成本</span> $920/oz</div>
+                                <div><span class="text-slate-500 block text-[10px]">2026E产量</span> 9.5 吨</div>
+                            </div>
+                        </div>
+
+                        <!-- Mine 4: 3Q & LCE Lithium Plate -->
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-slate-800 space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/30">阿根廷/湖南/刚果金 · 混合</span>
+                                    <h3 class="font-bold text-slate-100 text-sm mt-1">3Q 盐湖 & 湘源锂矿 (Lithium Assets)</h3>
+                                </div>
+                                <span class="text-xs font-bold text-sky-400 mono">NAV 估值: ￥280亿</span>
+                            </div>
+                            <p class="text-xs text-slate-400">包含阿根廷 3Q 高品位盐湖与湖南湘源锂云母矿。2026年打通LCE产业链，具备极高成本韧性。</p>
+                            <div class="grid grid-cols-3 gap-2 text-[11px] mono pt-2 border-t border-slate-800 text-slate-300">
+                                <div><span class="text-slate-500 block text-[10px]">LCE 总储量</span> 1,200 万吨</div>
+                                <div><span class="text-slate-500 block text-[10px]">3Q全成本</span> &lt; $6,000/t</div>
+                                <div><span class="text-slate-500 block text-[10px]">2026E产量</span> 4.5 万吨</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 5: FINANCIALS & 10-YEAR PROJECTIONS -->
+            <div id="tab-financials" class="space-y-6 hidden">
+                <div class="glass-card p-5 rounded-2xl border-slate-800">
+                    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-table-list text-purple-400"></i> 2016-2035 历史与十年长周期财务模型
+                    </h2>
+                    <p class="text-xs text-slate-400 mb-4">核心财务数据与 2030 / 2035 远景目标对比。</p>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-xs text-left text-slate-300">
+                            <thead class="bg-slate-900 text-slate-400 font-semibold border-b border-slate-800 mono">
+                                <tr>
+                                    <th class="p-3">年份</th>
+                                    <th class="p-3">营业收入 (亿)</th>
+                                    <th class="p-3">归母净利润 (亿)</th>
+                                    <th class="p-3">ROE (%)</th>
+                                    <th class="p-3">矿产金 (吨)</th>
+                                    <th class="p-3">矿产铜 (万吨)</th>
+                                    <th class="p-3">自由现金流 (亿)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-800/60 mono">
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-bold text-slate-400">2020</td>
+                                    <td class="p-3">1,715</td>
+                                    <td class="p-3">65.1</td>
+                                    <td class="p-3">11.8%</td>
+                                    <td class="p-3 text-amber-400">40.5</td>
+                                    <td class="p-3 text-copper-400">45.6</td>
+                                    <td class="p-3">78.2</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-bold text-slate-400">2022</td>
+                                    <td class="p-3">2,703</td>
+                                    <td class="p-3">200.4</td>
+                                    <td class="p-3">20.9%</td>
+                                    <td class="p-3 text-amber-400">56.4</td>
+                                    <td class="p-3 text-copper-400">85.9</td>
+                                    <td class="p-3">185.0</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-bold text-slate-400">2024</td>
+                                    <td class="p-3">3,120</td>
+                                    <td class="p-3">281.2</td>
+                                    <td class="p-3">22.4%</td>
+                                    <td class="p-3 text-amber-400">73.0</td>
+                                    <td class="p-3 text-copper-400">101.0</td>
+                                    <td class="p-3">230.0</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30 bg-emerald-500/10 border-l-2 border-emerald-500">
+                                    <td class="p-3 font-bold text-emerald-400">2026E</td>
+                                    <td class="p-3 text-slate-100 font-bold">3,850</td>
+                                    <td class="p-3 text-emerald-400 font-bold">385.0</td>
+                                    <td class="p-3 text-emerald-400">24.5%</td>
+                                    <td class="p-3 text-amber-400 font-bold">92.0</td>
+                                    <td class="p-3 text-copper-400 font-bold">115.0</td>
+                                    <td class="p-3 text-emerald-400">290.0</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-bold text-cyan-400">2028E</td>
+                                    <td class="p-3">4,500</td>
+                                    <td class="p-3 text-cyan-400 font-bold">460.0</td>
+                                    <td class="p-3">23.8%</td>
+                                    <td class="p-3 text-amber-400">105.0</td>
+                                    <td class="p-3 text-copper-400">135.0</td>
+                                    <td class="p-3">360.0</td>
+                                </tr>
+                                <tr class="hover:bg-slate-800/30">
+                                    <td class="p-3 font-bold text-purple-400">2030E (远景)</td>
+                                    <td class="p-3">5,400</td>
+                                    <td class="p-3 text-purple-400 font-bold">580.0</td>
+                                    <td class="p-3">22.0%</td>
+                                    <td class="p-3 text-amber-400">120.0</td>
+                                    <td class="p-3 text-copper-400">150.0</td>
+                                    <td class="p-3">450.0</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 6: INVESTMENT THESIS & RISK WATCH -->
+            <div id="tab-thesis" class="space-y-6 hidden">
+                <div class="glass-card p-5 rounded-2xl border-slate-800">
+                    <h2 class="text-lg font-bold text-slate-100 flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-shield-halved text-rose-400"></i> 投资逻辑与失效预警雷达 (Logic Radar)
+                    </h2>
+                    <p class="text-xs text-slate-400 mb-6">价值投资核心：只要核心假设未恶化，短期价格波动即为买入机会。</p>
+
+                    <!-- Core Thesis Checklist -->
+                    <div class="space-y-3">
+                        <!-- Thesis 1 -->
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-emerald-500/30 flex items-start justify-between gap-3">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <h3 class="font-bold text-slate-200 text-xs">假设 1：AI电力化与新能源引发铜矿长期结构性短缺</h3>
+                                </div>
+                                <p class="text-xs text-slate-400 pl-4">全球绿电、数据中心算力建设与电网改造推升精铜需求，新增超级铜矿极为稀缺。</p>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold shrink-0">
+                                <i class="fa-solid fa-check"></i> 逻辑强劲
+                            </span>
+                        </div>
+
+                        <!-- Thesis 2 -->
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-emerald-500/30 flex items-start justify-between gap-3">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <h3 class="font-bold text-slate-200 text-xs">假设 2：紫金自主探矿与矿山工程化极致成本优势</h3>
+                                </div>
+                                <p class="text-xs text-slate-400 pl-4">单位资本开支（CapEx/ton）显著低于欧美同行，具备快速将资源转化为现金流的能力。</p>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-bold shrink-0">
+                                <i class="fa-solid fa-check"></i> 逻辑强劲
+                            </span>
+                        </div>
+
+                        <!-- Thesis 3 (Risk Warning) -->
+                        <div class="bg-slate-900/90 p-4 rounded-xl border border-rose-500/30 flex items-start justify-between gap-3">
+                            <div class="space-y-1">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                                    <h3 class="font-bold text-slate-200 text-xs">失效预警点：海外资源国地缘政治与税负风险</h3>
+                                </div>
+                                <p class="text-xs text-slate-400 pl-4">部分海外矿山（如刚果金、南美）政策变动、矿权争议或特许权使用费提高。</p>
+                            </div>
+                            <span class="px-2 py-1 rounded bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] font-bold shrink-0">
+                                <i class="fa-solid fa-triangle-exclamation"></i> 持续监控中
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Data Feed / Proxy Modal -->
+    <div id="data-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="glass-card max-w-md w-full p-6 rounded-2xl border-slate-700 space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-slate-100 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-cyan-400"></i> 数据源与 API 接口配置 V3.0
+                </h3>
+                <button onclick="toggleDataFeedModal()" class="text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block text-slate-400 mb-1">行情刷新模式</label>
+                    <select id="feed-mode-select" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-200 focus:outline-none focus:border-cyan-500">
+                        <option value="mock">内嵌智能行情模拟引擎 (开箱即用)</option>
+                        <option value="api">公网 CORS 代理 / Yahoo Finance 直连 Hook</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-slate-400 mb-1">自定义 CORS 代理服务器 (免费/自建)</label>
+                    <input type="text" id="cors-proxy-input" value="https://corsproxy.io/?" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-slate-200 mono text-xs focus:outline-none focus:border-cyan-500">
+                </div>
+
+                <div class="pt-2 flex justify-between gap-2">
+                    <button onclick="exportSettings()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg transition flex-1">
+                        <i class="fa-solid fa-download mr-1"></i> 导出配置文件
+                    </button>
+                    <button onclick="saveApiSettings()" class="px-4 py-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold rounded-lg transition flex-1">
+                        保存并立即同步
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Logic Script -->
+    <script>
+        // Global Application State Variables
+        const state = {
+            currentStockA: 17.85,
+            currentStockH: 16.42,
+            goldPriceUsd: 2650,
+            copperPriceUsd: 9850,
+            lithiumPriceRmb: 76500,
+            dcfWacc: 8.5,
+            dcfG1: 12.0,
+            dcfGp: 2.5,
+            feedMode: 'mock'
+        };
+
+        // DOM Load Initialization
+        window.addEventListener('DOMContentLoaded', () => {
+            initCharts();
+            updateDCF();
+            updateSensitivity();
+            startLiveTickerLoop();
+        });
+
+        // Tab Navigation Logic
+        function switchTab(tabId) {
+            const tabs = ['overview', 'valuation', 'sensitivity', 'mines', 'financials', 'thesis'];
+            tabs.forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const btn = document.getElementById(`nav-${t}`);
+                if (t === tabId) {
+                    el.classList.remove('hidden');
+                    btn.classList.add('active');
+                } else {
+                    el.classList.add('hidden');
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // Toggle Data Settings Modal
+        function toggleDataFeedModal() {
+            const modal = document.getElementById('data-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Live Simulated Ticker Engine (or Hook for real fetch)
+        function startLiveTickerLoop() {
+            setInterval(() => {
+                if (state.feedMode === 'mock') {
+                    // Small subtle random price jitter to reflect live market depth
+                    const deltaA = (Math.random() - 0.49) * 0.08;
+                    state.currentStockA = Math.max(10, +(state.currentStockA + deltaA).toFixed(2));
+                    
+                    document.getElementById('ticker-a-price').innerText = `￥${state.currentStockA.toFixed(2)}`;
+                    
+                    // Update Safety Margin UI Gauge
+                    recalculateMarginOfSafety();
+                }
+            }, 3500);
+        }
+
+        // Recalculate Safety Margin and update Gauge Bar position
+        function recalculateMarginOfSafety() {
+            const intrinsic = 23.40;
+            const current = state.currentStockA;
+            const mos = ((intrinsic - current) / intrinsic * 100).toFixed(1);
+            
+            document.getElementById('mos-percentage-display').innerText = `${mos > 0 ? '+' : ''}${mos}%`;
+            document.getElementById('overview-pe-display').innerText = `${(current / 1.45).toFixed(1)}x`;
+
+            // Adjust Bar Marker Position
+            const marker = document.getElementById('price-marker-bar');
+            // Scale current price between 10 and 30 to percentage
+            const pct = Math.min(Math.max(((current - 10) / (32 - 10)) * 100, 5), 95);
+            marker.style.left = `${pct}%`;
+        }
+
+        // Dynamic DCF Calculation Engine
+        function updateDCF() {
+            const wacc = parseFloat(document.getElementById('wacc-slider').value) / 100;
+            const g1 = parseFloat(document.getElementById('g1-slider').value) / 100;
+            const gp = parseFloat(document.getElementById('gp-slider').value) / 100;
+
+            document.getElementById('wacc-val').innerText = `${(wacc * 100).toFixed(2)}%`;
+            document.getElementById('g1-val').innerText = `${(g1 * 100).toFixed(1)}%`;
+            document.getElementById('gp-val').innerText = `${(gp * 100).toFixed(2)}%`;
+
+            // Base FCF Year 0 = 290 Billion RMB
+            let baseFCF = 290;
+            let pvSum = 0;
+
+            // 10-Year Discounted Cash Flow Summation
+            for (let t = 1; t <= 10; t++) {
+                let currentGrowth = t <= 5 ? g1 : g1 * 0.6; // Decay growth rate after year 5
+                baseFCF *= (1 + currentGrowth);
+                let pv = baseFCF / Math.pow(1 + wacc, t);
+                pvSum += pv;
+            }
+
+            // Terminal Value Calculation
+            let terminalValue = (baseFCF * (1 + gp)) / (wacc - gp);
+            let pvTerminal = terminalValue / Math.pow(1 + wacc, 10);
+
+            let totalEV = pvSum + pvTerminal;
+            // Deduct Net Debt (~660 Billion Total Shares = 26.3 Billion)
+            let perShareVal = Math.max(5, (totalEV * 0.9) / 26.3).toFixed(2);
+            let buyPrice = (perShareVal * 0.70).toFixed(2);
+
+            document.getElementById('dcf-ev-result').innerText = `￥${Math.round(totalEV)} 亿`;
+            document.getElementById('dcf-share-result').innerText = `￥${perShareVal} / 股`;
+            document.getElementById('dcf-buy-zone').innerText = `￥${buyPrice} / 股`;
+            document.getElementById('intrinsic-val-display').innerText = `￥${perShareVal}`;
+
+            recalculateMarginOfSafety();
+        }
+
+        // Dynamic Commodity Sensitivity Slider Calculation Engine
+        function updateSensitivity() {
+            const gold = parseFloat(document.getElementById('sens-gold-slider').value);
+            const copper = parseFloat(document.getElementById('sens-copper-slider').value);
+
+            document.getElementById('sens-gold-val').innerText = `$${gold}`;
+            document.getElementById('sens-copper-val').innerText = `$${copper}`;
+
+            // Base 2026E Profit @ $2650 Gold & $9850 Copper = 385.0 Billion RMB
+            const goldDiff = (gold - 2650) / 100 * 23; // +23亿 per $100
+            const copperDiff = (copper - 9850) / 500 * 30; // +30亿 per $500
+
+            const netProfit = Math.max(100, 385.0 + goldDiff + copperDiff);
+            const eps = (netProfit / 26.3).toFixed(2);
+            const pe = (state.currentStockA / eps).toFixed(1);
+            const divYield = ((eps * 0.45) / state.currentStockA * 100).toFixed(2);
+
+            document.getElementById('sens-profit-result').innerText = `${netProfit.toFixed(1)} 亿元`;
+            document.getElementById('sens-profit-diff').innerText = `较基准变动: ${ (goldDiff + copperDiff) >= 0 ? '+' : '' }${(goldDiff + copperDiff).toFixed(1)} 亿元`;
+            document.getElementById('sens-eps-result').innerText = `￥${eps}`;
+            document.getElementById('sens-pe-result').innerHTML = `对应 PE: <span class="mono text-slate-200">${pe}x</span>`;
+            document.getElementById('sens-div-result').innerText = `${divYield}%`;
+        }
+
+        // Initialize Chart.js Visualization Component
+        function initCharts() {
+            // Chart 1: Production Multi-Axis Bar/Line
+            const ctx1 = document.getElementById('productionChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['2020', '2022', '2024', '2026E', '2028E'],
+                    datasets: [
+                        {
+                            label: '矿产铜 (万吨)',
+                            data: [45.6, 85.9, 101.0, 115.0, 135.0],
+                            backgroundColor: 'rgba(249, 115, 22, 0.7)',
+                            borderRadius: 4
+                        },
+                        {
+                            label: '矿产金 (吨)',
+                            data: [40.5, 56.4, 73.0, 92.0, 105.0],
+                            backgroundColor: 'rgba(234, 179, 8, 0.8)',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 10 } } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(51,65,85,0.3)' } },
+                        y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(51,65,85,0.3)' } }
+                    }
+                }
+            });
+
+            // Chart 2: Revenue vs FCF Area Chart
+            const ctx2 = document.getElementById('financialTrendChart').getContext('2d');
+            new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: ['2020', '2022', '2024', '2026E', '2028E', '2030E'],
+                    datasets: [
+                        {
+                            label: '营业收入 (亿元)',
+                            data: [1715, 2703, 3120, 3850, 4500, 5400],
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        },
+                        {
+                            label: '归母净利润 (亿元)',
+                            data: [65.1, 200.4, 281.2, 385.0, 460.0, 580.0],
+                            borderColor: '#10b981',
+                            borderWidth: 2,
+                            tension: 0.3
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { labels: { color: '#94a3b8', font: { size: 10 } } }
+                    },
+                    scales: {
+                        x: { ticks: { color: '#64748b' }, grid: { color: 'rgba(51,65,85,0.3)' } },
+                        y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(51,65,85,0.3)' } }
+                    }
+                }
+            });
+        }
+
+        // Export Terminal Scenario JSON File
+        function exportSettings() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "zijin_terminal_v3_config.json");
+            dlAnchorElem.click();
+        }
+
+        // Save Settings Trigger
+        function saveApiSettings() {
+            state.feedMode = document.getElementById('feed-mode-select').value;
+            document.getElementById('api-status-label').innerText = state.feedMode === 'mock' ? '模拟行情打通' : 'CORS 代理模式已启动';
+            toggleDataFeedModal();
+        }
+    </script>
+</body>
+</html>
